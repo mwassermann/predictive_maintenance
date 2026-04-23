@@ -1,0 +1,23 @@
+artifact_path: file:///C:/Users/wasse/predictive-maintenance/src/training/mlruns/1/models/m-a5500a529c244c188157ccafdc14ebcf/artifacts
+flavors:
+  python_function:
+    config:
+      device: null
+    data: data
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.pytorch
+    pickle_module_name: mlflow.pytorch.pickle_module
+    python_version: 3.10.20
+  pytorch:
+    code: null
+    model_data: data
+    pytorch_version: 2.10.0
+mlflow_version: 3.11.1
+model_id: m-a5500a529c244c188157ccafdc14ebcf
+model_size_bytes: 252843
+model_uuid: m-a5500a529c244c188157ccafdc14ebcf
+prompts: null
+run_id: f6413d745edc447084fcbaaab5ece9c0
+utc_time_created: '2026-04-22 20:09:51.129012'

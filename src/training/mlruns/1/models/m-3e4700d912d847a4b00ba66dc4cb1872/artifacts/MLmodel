@@ -1,0 +1,23 @@
+artifact_path: file:///C:/Users/wasse/predictive-maintenance/src/training/mlruns/1/models/m-3e4700d912d847a4b00ba66dc4cb1872/artifacts
+flavors:
+  python_function:
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.sklearn
+    model_path: model.pkl
+    predict_fn: predict
+    python_version: 3.10.20
+  sklearn:
+    code: null
+    pickled_model: model.pkl
+    serialization_format: cloudpickle
+    sklearn_version: 1.7.2
+    skops_trusted_types: null
+mlflow_version: 3.11.1
+model_id: m-3e4700d912d847a4b00ba66dc4cb1872
+model_size_bytes: 74949674
+model_uuid: m-3e4700d912d847a4b00ba66dc4cb1872
+prompts: null
+run_id: 9964c7c098c84854ad239c9f0c0f25c3
+utc_time_created: '2026-04-22 15:11:30.527801'

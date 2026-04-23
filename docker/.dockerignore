@@ -1,0 +1,28 @@
+# data
+data/
+
+# jupyter
+notebooks/
+.ipynb_checkpoints/
+
+# mlflow runs (model loaded from registry via mounted db)
+mlruns/
+
+# python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# env
+.env
+*.env
+venv/
+.venv/
+
+# git
+.git/
+.gitignore
+
+# misc
+*.log

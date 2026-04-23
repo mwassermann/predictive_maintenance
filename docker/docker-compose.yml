@@ -1,0 +1,12 @@
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../mlflow.db:/app/mlflow.db
+      - ../artifacts:/app/artifacts
+    environment:
+      - PYTHONUNBUFFERED=1

@@ -1,0 +1,37 @@
+# --- Hard constraints (DO NOT TOUCH) ---
+tensorflow==2.10.1
+protobuf>=3.9.2,<3.20
+tensorboard==2.10.1
+
+# --- Core scientific stack ---
+numpy
+pandas
+scipy
+scikit-learn
+
+# --- ML ---
+torch
+xgboost
+
+# --- Experiment tracking ---
+mlflow
+
+# --- Pipeline ---
+prefect
+
+# --- Database ---
+duckdb
+
+# --- API ---
+fastapi
+uvicorn
+pydantic
+
+# --- Viz / utils ---
+matplotlib
+seaborn
+tqdm
+requests
+
+# --- Dev ---
+jupyterlab
