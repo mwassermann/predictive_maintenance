@@ -3,11 +3,23 @@ import numpy as np
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 import joblib
-import mlflow.pytorch
+#import mlflow.pytorch
 from pathlib import Path
 import torch
+import os
+import sys
+
+current = os.getcwd()
+parent = os.path.dirname(current)
+sys.path.append(parent)
+
+
+from src.training.model import RULPredictor
+
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
+ARTIFACTS_DIR = Path(os.getenv("ARTIFACTS_DIR", str(PROJECT_ROOT / "artifacts")))
+
 
 
 class SensorWindow(BaseModel):
@@ -25,21 +37,18 @@ class PredictionResponse(BaseModel):
     predicted_rul: float
     failure_probability: float
 
-mlflow.set_tracking_uri(f"sqlite:///{PROJECT_ROOT}/mlflow.db")
+#mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI", f"sqlite:///{PROJECT_ROOT}/mlflow.db"))
 ml_models = {}
 feature_length = 30
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # runs on startup
-    ml_models["model"] = mlflow.pytorch.load_model("models:/rul-predictor/Production")
-    ml_models["model"].to("cpu")
-    ml_models["model"].eval()
-    ml_models["scaler"] = joblib.load(PROJECT_ROOT / "artifacts" / f"scaler_{feature_length}.joblib")
-    #ml_models["fe"] = FeatureEngineer.load(PROJECT_ROOT / "artifacts" / f"feature_engineer_{feature_length}.joblib")
-
+    model = RULPredictor(input_size=45, hidden_size=128, num_layers=2, dropout=0.2788)
+    model.load_state_dict(torch.load(ARTIFACTS_DIR / "best_model.pt", map_location="cpu"))
+    model.eval()
+    ml_models["model"] = model
+    ml_models["scaler"] = joblib.load(ARTIFACTS_DIR / "scaler_25.joblib")
     yield
-    # runs on shutdown (cleanup)
     ml_models.clear()
 
 app = FastAPI(lifespan=lifespan)

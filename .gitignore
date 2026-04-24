@@ -19,4 +19,5 @@ mlflow.db
 *.log
 tmp/
 data/
+mlruns/
 src/training/mlruns

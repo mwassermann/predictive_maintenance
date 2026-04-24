@@ -10,3 +10,4 @@ services:
       - ../artifacts:/app/artifacts
     environment:
       - PYTHONUNBUFFERED=1
+      - ARTIFACTS_DIR=/app/artifacts
