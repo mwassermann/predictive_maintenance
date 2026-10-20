@@ -18,7 +18,46 @@ The CMAPSS scoring function penalises late predictions (overestimating RUL) expo
 
 This is why the LSTM is the selected model despite having the *highest* RMSE of the three: it posts the lowest CMAPSS score — **4.2% below the Random Forest and 8.8% below XGBoost** — i.e. fewer of the overestimates that let an engine run past its failure point. RMSE treats both error directions equally; CMAPSS does not, and neither does a maintenance budget.
 
+![RMSE vs CMAPSS](reports/figures/03_rmse_vs_cmapss.png)
+
 Hyperparameters were selected via **Optuna Bayesian search** (20 trials, each logged as a nested MLflow run).
+
+---
+
+## Figures
+
+Regenerate every figure from the current predictions and MLflow runs:
+
+```bash
+python -m src.viz.export_figures
+```
+
+Each one is written to `reports/figures/` twice — `.png` (200 dpi) for this
+README and `.pdf` (vector) for slides.
+
+### The degradation signal
+
+![Sensor degradation](reports/figures/01_degradation_signal.png)
+
+The five sensors the EDA found most informative, averaged across all 100 training
+engines and aligned by remaining life. Every one drifts monotonically toward
+failure, which is what makes RUL learnable at all.
+
+### Predicted vs actual
+
+![Predicted vs actual RUL](reports/figures/02_predicted_vs_actual.png)
+
+The horizontal ceiling at 116 cycles is not a bug: training labels are capped at
+125, so the model has never seen a target above that and cannot produce one.
+
+### Error structure
+
+![Residual distribution](reports/figures/04_residual_distribution.png)
+
+![MAE by RUL range](reports/figures/05_mae_by_rul_range.png)
+
+Mean absolute error is lowest in the band that matters most — 6.0 cycles for
+engines with 30 or fewer cycles of life left, against 22.8 in the middle band.
 
 ---
 
@@ -61,9 +100,13 @@ predictive-maintenance/
 │   │   └── evaluate.py     # Final test set evaluation + model registration
 │   ├── api/
 │   │   └── main.py         # FastAPI application
+│   ├── viz/
+│   │   └── export_figures.py   # showcase figures (matplotlib)
 │   └── dashboard/
 │       ├── app.py          # Streamlit dashboard (fleet / engine / model views)
 │       └── predictions.csv # Test-set predictions, exported from eda.ipynb
+├── reports/
+│   └── figures/            # exported PNG + PDF, see src/viz/export_figures.py
 ├── notebooks/
 │   └── eda.ipynb           # Exploratory analysis + predictions.csv export
 ├── docker/
