@@ -1,6 +1,6 @@
 # Predictive Maintenance API for Turbofan Engine Sensor Data
 
-End-to-end machine learning system for predicting **Remaining Useful Life (RUL)** of turbofan engines from multivariate sensor time-series data. Built to demonstrate the complete production ML loop: data ingestion → feature engineering → experiment tracking → model registry → containerised REST API.
+End-to-end machine learning system for predicting **Remaining Useful Life (RUL)** of turbofan engines from multivariate sensor time-series data. Built to demonstrate the complete production ML loop: data ingestion → feature engineering → experiment tracking → model registry → containerised REST API → monitoring dashboard.
 
 ---
 
@@ -14,8 +14,9 @@ Evaluated on the NASA CMAPSS FD001 test set (100 engines, completely held out du
 | XGBoost | 19.7 | 14.8 | 1,199 |
 | **LSTM (tuned)** | **21.2** | **16.0** | **1,093** |
 
-*All models evaluated on 100 held-out test engines (NASA CMAPSS FD001). CMAPSS score penalises late predictions (overestimating RUL) exponentially more than early ones — reflecting the asymmetric cost of unexpected failure vs unnecessary maintenance.*
-The CMAPSS scoring function penalises late predictions (overestimating RUL) exponentially more than early ones — reflecting the real asymmetric cost of unexpected failure vs unnecessary maintenance. The LSTM achieves a **95% reduction in CMAPSS score** vs the Random Forest baseline despite comparable RMSE, indicating substantially fewer dangerous overestimates.
+The CMAPSS scoring function penalises late predictions (overestimating RUL) exponentially more than early ones — reflecting the real asymmetric cost of unexpected failure vs unnecessary maintenance.
+
+This is why the LSTM is the selected model despite having the *highest* RMSE of the three: it posts the lowest CMAPSS score — **4.2% below the Random Forest and 8.8% below XGBoost** — i.e. fewer of the overestimates that let an engine run past its failure point. RMSE treats both error directions equally; CMAPSS does not, and neither does a maintenance budget.
 
 Hyperparameters were selected via **Optuna Bayesian search** (20 trials, each logged as a nested MLflow run).
 
@@ -35,6 +36,7 @@ Hyperparameters were selected via **Optuna Bayesian search** (20 trials, each lo
 | Model registry | MLflow Model Registry |
 | API framework | FastAPI + Uvicorn |
 | Validation | Pydantic |
+| Dashboard | Streamlit + Plotly |
 | Containerisation | Docker + Docker Compose |
 
 ---
@@ -57,15 +59,19 @@ predictive-maintenance/
 │   │   ├── train_baselines.py  # Random Forest + XGBoost training
 │   │   ├── train_lstm.py   # LSTM + Optuna hyperparameter search
 │   │   └── evaluate.py     # Final test set evaluation + model registration
-│   └── api/
-│       └── main.py         # FastAPI application
+│   ├── api/
+│   │   └── main.py         # FastAPI application
+│   └── dashboard/
+│       ├── app.py          # Streamlit dashboard (fleet / engine / model views)
+│       └── predictions.csv # Test-set predictions, exported from eda.ipynb
 ├── notebooks/
-│   └── eda.ipynb           # Exploratory data analysis
+│   └── eda.ipynb           # Exploratory analysis + predictions.csv export
 ├── docker/
 │   ├── Dockerfile
 │   └── docker-compose.yml
 ├── mlflow.db               # MLflow tracking backend
-└── requirements.txt
+├── requirements.txt
+└── requirements-dashboard.txt   # separate env, see below
 ```
 
 ---
@@ -85,6 +91,16 @@ RUL labels are computed from run-to-failure trajectories and capped at 125 cycle
 ```bash
 pip install -r requirements.txt
 ```
+
+The dashboard needs a **separate environment**:
+
+```bash
+pip install -r requirements-dashboard.txt
+```
+
+Streamlit requires `protobuf>=3.20`, while the pinned `tensorflow==2.10.1` in
+`requirements.txt` requires `protobuf<3.20`. The two cannot coexist, so the
+dashboard dependencies are kept in their own file.
 
 ### 2. Download the dataset
 
@@ -142,6 +158,20 @@ Interactive docs available at `http://127.0.0.1:8000/docs`.
 cd docker
 docker-compose up --build
 ```
+
+### 10. Run the dashboard
+
+```bash
+streamlit run src/dashboard/app.py
+```
+
+Opens at `http://localhost:8501` with three views: **Fleet Overview** (all 100
+test engines by predicted RUL, click a bar to drill into an engine), **Engine
+Inspector** (sensor trajectories for a single unit), and **Model Performance**
+(metrics, model comparison, error breakdown, worst predictions).
+
+Reads `src/dashboard/predictions.csv`; regenerate it from `notebooks/eda.ipynb`
+after retraining.
 
 ---
 
